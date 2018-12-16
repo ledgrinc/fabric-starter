@@ -107,3 +107,8 @@ services:
 #      - ${WWW_PORT:-8080}:80
     volumes:
       - ./crypto-config/ordererOrganizations/${DOMAIN:-example.com}/msp:/usr/share/nginx/html/msp
+
+networks:
+  default:
+    external:
+      name: fabric-starter_default
