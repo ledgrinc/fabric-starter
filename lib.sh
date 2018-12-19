@@ -8,6 +8,12 @@
 
 export DOMAIN ORG
 
+if [ -z "$LOCAL_DEVMODE" ]; then
+    export TLS_SUFFIX="--tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+else
+    export TLS_SUFFIX=""
+fi
+
 function printInColor() {
     color1=$1
     message1=$2
@@ -105,7 +111,7 @@ function fetchChannelConfigBlock() {
     channel=${1:?"Channel name must be specified"}
     blockNum=${2:-config}
     runCLI "mkdir -p crypto-config/configtx && peer channel fetch $blockNum crypto-config/configtx/${channel}.pb -o orderer.$DOMAIN:7050 -c ${channel}  \
-     --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt && chown $UID -R crypto-config/"
+     $TLS_SUFFIX && chown $UID -R crypto-config/"
 }
 
 function txTranslateChannelConfigBlock() {
@@ -140,7 +146,7 @@ function createConfigUpdateEnvelope() {
     runCLI "echo '{\"payload\":{\"header\":{\"channel_header\":{\"channel_id\":\"$channel\",\"type\":2}},\"data\":{\"config_update\":'\`cat crypto-config/configtx/update.json\`'}}}' | jq . > crypto-config/configtx/update_in_envelope.json"
     runCLI "configtxlator proto_encode --type 'common.Envelope' --input=crypto-config/configtx/update_in_envelope.json --output=update_in_envelope.pb"
     echo " >> $org is sending channel update update_in_envelope.pb with $d by $command"
-    runCLI "peer channel update -f update_in_envelope.pb -c $channel -o orderer.$DOMAIN:7050 --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    runCLI "peer channel update -f update_in_envelope.pb -c $channel -o orderer.$DOMAIN:7050 $TLS_SUFFIX"
 }
 
 function updateChannelConfig() {
@@ -182,7 +188,9 @@ function joinChannel() {
     echo "Join $ORG to channel $channel"
     fetchChannelConfigBlock $channel "0"
     runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer channel join -b crypto-config/configtx/$channel.pb"
-    runCLI "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer channel join -b crypto-config/configtx/$channel.pb"
+    if [ -z "$LOCAL_DEVMODE" ]; then
+        runCLI "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer channel join -b crypto-config/configtx/$channel.pb"
+    fi
 }
 
 function updateAnchorPeers() {
@@ -199,7 +207,9 @@ function installChaincode() {
 
     echo "Install chaincode $chaincodeName  $path $lang $version"
     runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode install -n $chaincodeName -v $chaincodeVersion -p $chaincodePath -l $lang"
-    runCLI "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode install -n $chaincodeName -v $chaincodeVersion -p $chaincodePath -l $lang"
+    if [ -z "$LOCAL_DEVMODE" ]; then
+        runCLI "CORE_PEER_ADDRESS=peer1.$ORG.$DOMAIN:7051 peer chaincode install -n $chaincodeName -v $chaincodeVersion -p $chaincodePath -l $lang"
+    fi
 }
 
 
@@ -214,7 +224,7 @@ function instantiateChaincode() {
 
     arguments="{\"Args\":$initArguments}"
     echo "Instantiate chaincode $channelName $chaincodeName '$initArguments' $chaincodeVersion"
-    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode instantiate -n $chaincodeName -v ${chaincodeVersion} -c '$arguments' -o orderer.$DOMAIN:7050 -C $channelName --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt $privateCollectionParam"
+    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode instantiate -n $chaincodeName -v ${chaincodeVersion} -c '$arguments' -o orderer.$DOMAIN:7050 -C $channelName $TLS_SUFFIX $privateCollectionParam"
 }
 
 
@@ -230,7 +240,7 @@ function upgradeChaincode() {
 
     arguments="{\"Args\":$initArguments}"
 
-    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode upgrade -n $chaincodeName -v $chaincodeVersion -c '$arguments' -o orderer.$DOMAIN:7050 -C $channelName "$policy" --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode upgrade -n $chaincodeName -v $chaincodeVersion -c '$arguments' -o orderer.$DOMAIN:7050 -C $channelName "$policy" $TLS_SUFFIX"
 }
 
 function callChaincode() {
@@ -240,7 +250,7 @@ function callChaincode() {
     arguments="{\"Args\":$arguments}"
     action=${4:-query}
 	echo "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode $action -n $chaincodeName -C $channelName -c '$arguments'"
-    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode $action -n $chaincodeName -C $channelName -c '$arguments' --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode $action -n $chaincodeName -C $channelName -c '$arguments' $TLS_SUFFIX"
 }
 
 function queryChaincode() {

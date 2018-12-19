@@ -12,12 +12,11 @@ x-peer:
   &peer-defaults
   image: hyperledger/fabric-peer:${FABRIC_VERSION:-latest}
   working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
-  command: peer node start
+  command: peer node start ${LOCAL_DEVMODE_START}
   volumes:
   - /var/run/:/host/var/run/
   depends_on:
   - ca
-
 
 services:
 
@@ -61,7 +60,7 @@ services:
     # are not doing mutual TLS
     - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
-    - CORE_PEER_TLS_ENABLED=true
+    - CORE_PEER_TLS_ENABLED=${CORE_PEER_TLS_ENABLED:-true}
     - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
     - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
     - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
@@ -96,7 +95,7 @@ services:
     # are not doing mutual TLS
     - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peer/msp
-    - CORE_PEER_TLS_ENABLED=true
+    - CORE_PEER_TLS_ENABLED=${CORE_PEER_TLS_ENABLED:-true}
     - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
     - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
     - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
@@ -125,7 +124,7 @@ services:
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/peeradmin/msp
       - CORE_PEER_ADDRESS=peer0.${ORG:-org1}.${DOMAIN:-example.com}:7051
       - CORE_LOGGING_LEVEL=DEBUG
-      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_ENABLED=${CORE_PEER_TLS_ENABLED:-true}
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
