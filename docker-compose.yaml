@@ -34,6 +34,7 @@ services:
     volumes:
       - ./crypto-config/peerOrganizations/${ORG:-org1}.${DOMAIN:-example.com}/ca/:/etc/hyperledger/fabric-ca-server-config
       - ./crypto-config/fabric-ca-server-config-${ORG:-org1}.yaml:/etc/hyperledger/fabric-ca-server/fabric-ca-server-config.yaml
+    restart: always
 
   peer0:
     << : *peer-defaults
@@ -69,6 +70,7 @@ services:
     - ./crypto-config/peerOrganizations/${ORG:-org1}.${DOMAIN:-example.com}/peers/peer0.${ORG:-org1}.${DOMAIN:-example.com}/:/etc/hyperledger/crypto/peer
     - peer0:/var/hyperledger/production
     - /var/run/:/host/var/run/
+    restart: always
 
   peer1:
     << : *peer-defaults
@@ -103,6 +105,7 @@ services:
     - ./crypto-config/peerOrganizations/${ORG:-org1}.${DOMAIN:-example.com}/peers/peer1.${ORG:-org1}.${DOMAIN:-example.com}/:/etc/hyperledger/crypto/peer
     - peer1:/var/hyperledger/production
     - /var/run/:/host/var/run/
+    restart: always
 
   cli.peer:
     container_name: cli.${ORG:-org1}.${DOMAIN:-example.com}
@@ -177,6 +180,7 @@ services:
 #      - ${WWW_PORT:-8081}:80
     volumes:
       - ./crypto-config/peerOrganizations/${ORG:-org1}.${DOMAIN:-example.com}/msp:/usr/share/nginx/html/msp
+    restart: always
 
 networks:
   default:
