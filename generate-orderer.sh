@@ -5,7 +5,7 @@ source lib.sh
 if [ -d crypto-config/ordererOrganizations -a -z "${FORCE_CLEAN_INSTALL}" ]; then
     echo "Using previously created crypto"
 else
-    [ -d crypto-config/ordererOrganizations ] && echo "FORCE_CLEAN_INSTALL is set to ${FORCE_CLEAN_INSTALL}"
+    echo $0 "FORCE_CLEAN_INSTALL is set to  ${FORCE_CLEAN_INSTALL}"
 
     EXECUTE_BY_ORDERER=1 envSubst "templates/cryptogen-orderer-template.yaml" "crypto-config/cryptogen-orderer.yaml"
     EXECUTE_BY_ORDERER=1 runCLI "rm -rf crypto-config/ordererOrganizations && cryptogen generate --config=crypto-config/cryptogen-orderer.yaml && chown $UID -R crypto-config/"
