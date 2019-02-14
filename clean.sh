@@ -10,7 +10,7 @@ docker rmi -f $(docker images -q -f "reference=dev-*")
 
 if [ -n "${FORCE_CLEAN_INSTALL}" ]; then
 
-    echo "Cleaning because FORCE_CLEAN_INSTALL is set to ${FORCE_CLEAN_INSTALL}"
+    echo $0 "Cleaning because FORCE_CLEAN_INSTALL is set to ${FORCE_CLEAN_INSTALL}"
 
     docker volume rm -f peer0-volume
     docker volume rm -f peer1-volume
