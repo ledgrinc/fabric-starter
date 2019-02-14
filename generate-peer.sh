@@ -25,7 +25,7 @@ envSubst "templates/fabric-ca-server-template.yaml" "crypto-config/fabric-ca-ser
 if [ -d crypto-config/peerOrganizations -a -z "${FORCE_CLEAN_INSTALL}" ]; then
     echo "Using previously created crypto"
 else
-    [ -d crypto-config/peerOrganizations ] && echo "FORCE_CLEAN_INSTALL is set to ${FORCE_CLEAN_INSTALL}"
+    echo $0 "FORCE_CLEAN_INSTALL is set to  ${FORCE_CLEAN_INSTALL}"
 
     runCLI "rm -rf crypto-config/peerOrganizations/$ORG.$DOMAIN \
         && cryptogen generate --config=crypto-config/cryptogen-$ORG.yaml \
