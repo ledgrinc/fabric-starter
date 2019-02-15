@@ -20,9 +20,18 @@ fi
 
 envSubst "templates/cryptogen-peer-template.yaml" "crypto-config/cryptogen-$ORG.yaml"
 envSubst "templates/fabric-ca-server-template.yaml" "crypto-config/fabric-ca-server-config-$ORG.yaml" "export LDAP_BASE_DN=${LDAP_BASE_DN}"
-runCLI "rm -rf crypto-config/peerOrganizations/$ORG.$DOMAIN \
-    && cryptogen generate --config=crypto-config/cryptogen-$ORG.yaml \
-    && mv crypto-config/peerOrganizations/$ORG.$DOMAIN/ca/*_sk crypto-config/peerOrganizations/$ORG.$DOMAIN/ca/sk.pem \
-    && mv crypto-config/peerOrganizations/$ORG.$DOMAIN/users/Admin@$ORG.$DOMAIN/msp/keystore/*_sk crypto-config/peerOrganizations/$ORG.$DOMAIN/users/Admin@$ORG.$DOMAIN/msp/keystore/sk.pem \
-    && cp -r crypto-config/ordererOrganizations/$DOMAIN/msp/* crypto-config/peerOrganizations/$ORG.$DOMAIN/msp 2>/dev/null \
-    && chown $UID -R crypto-config/ || chown $UID -R crypto-config/"
+
+# When using persistent data volumes, don't recreate the crypto
+if [ -d crypto-config/peerOrganizations -a -z "${FORCE_CLEAN_INSTALL}" ]; then
+    echo "Using previously created crypto"
+else
+    [ -d crypto-config/peerOrganizations ] && echo "FORCE_CLEAN_INSTALL is set to ${FORCE_CLEAN_INSTALL}"
+
+    runCLI "rm -rf crypto-config/peerOrganizations/$ORG.$DOMAIN \
+        && cryptogen generate --config=crypto-config/cryptogen-$ORG.yaml \
+        && mv crypto-config/peerOrganizations/$ORG.$DOMAIN/ca/*_sk crypto-config/peerOrganizations/$ORG.$DOMAIN/ca/sk.pem \
+        && mv crypto-config/peerOrganizations/$ORG.$DOMAIN/users/Admin@$ORG.$DOMAIN/msp/keystore/*_sk crypto-config/peerOrganizations/$ORG.$DOMAIN/users/Admin@$ORG.$DOMAIN/msp/keystore/sk.pem \
+        && cp -r crypto-config/ordererOrganizations/$DOMAIN/msp/* crypto-config/peerOrganizations/$ORG.$DOMAIN/msp 2>/dev/null \
+        && chown $UID -R crypto-config/ || chown $UID -R crypto-config/"
+
+fi
