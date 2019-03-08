@@ -6,12 +6,7 @@ version: '3.7'
 
 volumes:
   peer0:
-    name: peer0-volume # name of the ebs volume created in aws
-    driver: ${FABRIC_DRIVER:-local}
   peer1:
-    name: peer1-volume # name of the ebs volume created in aws
-    driver: ${FABRIC_DRIVER:-local}
-
 
 x-peer:
   &peer-defaults
