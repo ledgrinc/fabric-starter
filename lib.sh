@@ -253,6 +253,13 @@ function callChaincode() {
     runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode $action -n $chaincodeName -C $channelName -c '$arguments' $TLS_SUFFIX"
 }
 
+
+function listInstantiatedChaincodes() {
+    channelName=${1:?Channel name must be specified}
+	echo "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode list -C $channelName --instantiated $TLS_SUFFIX"
+    runCLI "CORE_PEER_ADDRESS=peer0.$ORG.$DOMAIN:7051 peer chaincode list -C $channelName --instantiated $TLS_SUFFIX"
+}
+
 function queryChaincode() {
     callChaincode $@ query
 }
